@@ -3,6 +3,7 @@ using BlackCanvasApp.Repositories;
 using BlackCanvasApp.Services.Interfaces;
 using BlackCanvasApp.Services.Services;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,8 +13,37 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Configuration.AddEnvironmentVariables();
-var connString = builder.Configuration.GetConnectionString("DefaultConnection")
-                 ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+//var connString = builder.Configuration.GetConnectionString("DefaultConnection")
+//                 ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+string connString;
+
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':');
+
+    var builderConn = new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port,
+        Username = userInfo[0],
+        Password = userInfo[1],
+        Database = uri.AbsolutePath.Trim('/'),
+        SslMode = SslMode.Require,
+        TrustServerCertificate = true
+    };
+
+    connString = builderConn.ToString();
+}
+else
+{
+    connString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+builder.Services.AddDbContext<BcDContext>(options =>
+    options.UseNpgsql(connString));
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
