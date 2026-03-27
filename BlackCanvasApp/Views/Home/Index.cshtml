@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="text-center mt-5">
+
+    <h1 class="fw-bold">Bienvenido a BlankCanvasApp 🟣</h1>
+    <p class="text-muted">Sistema de gestión de clientes y facturación</p>
+
+</div>
+
+<div class="row mt-5">
+
+    <!-- Clientes -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-soft p-4 text-center">
+
+            <i class="bi bi-people display-4 mb-3 text-primary"></i>
+
+            <h4>Clientes</h4>
+            <p class="text-muted">Gestiona tus clientes fácilmente</p>
+
+            <a class="btn btn-primary" asp-controller="Customer" asp-action="CustomerList">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+        </div>
+    </div>
+
+    <!-- Facturación -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-soft p-4 text-center">
+
+            <i class="bi bi-receipt display-4 mb-3 text-primary"></i>
+
+            <h4>Facturación</h4>
+            <p class="text-muted">Crea y gestiona tus facturas</p>
+
+            <a href="/Invoice" class="btn btn-primary">
+                Ir a Facturación
+            </a>
+        </div>
+    </div>
+
+</div>
+@* @{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+ *@

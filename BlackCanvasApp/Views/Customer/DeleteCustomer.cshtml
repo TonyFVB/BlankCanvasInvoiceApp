@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Eliminar Cliente";
+}
+
+<h2 class="page-title text-danger">Eliminar Cliente</h2>
+
+<div class="card shadow-soft p-4">
+
+    <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+
+    <ul>
+        <li><strong>Nombre:</strong> Juan Pérez</li>
+        <li><strong>Email:</strong> juan@email.com</li>
+    </ul>
+
+    <div class="d-flex justify-content-end">
+        <a class="btn btn-secondary me-2" asp-controller="Customer" asp-action="CustomerList">Cancelar</a>
+        <button class="btn btn-danger">Eliminar</button>
+    </div>
+
+</div>

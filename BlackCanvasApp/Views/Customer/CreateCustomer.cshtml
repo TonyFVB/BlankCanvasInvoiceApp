@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Nuevo Cliente";
+}
+
+<h2 class="page-title">Nuevo Cliente</h2>
+
+<div class="card shadow-soft p-4">
+
+    <form>
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input class="form-control" placeholder="Nombre del cliente" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <textarea class="form-control"></textarea>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <a class="btn btn-secondary me-2"  asp-controller="Customer" asp-action="CustomerList">Cancelar</a>
+            <button class="btn btn-primary">Guardar</button>
+        </div>
+
+    </form>
+
+</div>
