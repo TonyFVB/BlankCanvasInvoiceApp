@@ -3,8 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copiamos primero el archivo .csproj para aprovechar la cache
-COPY BlackCanvasApp/BlackCanvasApp.csproj BlackCanvasApp/
-RUN dotnet restore BlackCanvasApp/BlackCanvasApp.csproj
+COPY BlackCanvasApp.csproj .
+RUN dotnet restore BlackCanvasApp.csproj
 
 # Copiamos el resto del código
 COPY . .
