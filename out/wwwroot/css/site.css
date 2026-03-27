@@ -1,0 +1,87 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* NAVBAR */
+.custom-navbar {
+    background-color: #000;
+}
+
+.navbar-brand {
+    color: #fff !important;
+}
+
+.nav-link {
+    color: #ddd !important;
+    transition: 0.3s;
+}
+
+    .nav-link:hover {
+        color: #a855f7 !important;
+    }
+
+/* BOTONES */
+.btn-primary {
+    background-color: #6C2BD9;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background-color: #5b21b6;
+    }
+
+/* CARDS */
+.card {
+    border-radius: 12px;
+    border: none;
+}
+
+/* TABLAS */
+.table {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* TITULOS */
+.page-title {
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* SOMBRAS */
+.shadow-soft {
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.05);
+}
+/*html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}*/

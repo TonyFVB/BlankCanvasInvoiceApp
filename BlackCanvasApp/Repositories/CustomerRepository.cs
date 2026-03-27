@@ -47,7 +47,7 @@ namespace BlackCanvasApp.Repositories
         public async Task DeleteAsync(int id)
         {
             var customer = await _context.Customers.FindAsync(id);
-            customer?.IsDeleted = true;
+            customer.IsDeleted = true;
             _context.Customers.Update(customer);
             await _context.SaveChangesAsync();
             
