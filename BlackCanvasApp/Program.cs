@@ -14,6 +14,8 @@ builder.Services.AddControllersWithViews();
 builder.Configuration.AddEnvironmentVariables();
 var connString = builder.Configuration.GetConnectionString("DefaultConnection")
                  ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddScoped<ICustomer, CustomerService>();
 builder.Services.AddScoped<Iinvoice, InvoiceService>();
