@@ -18,7 +18,6 @@ COPY --from=build /app/publish .
 
 # Exponemos el puerto dinámico
 ENV ASPNETCORE_URLS=http://+:$PORT
-ENV ASPNETCORE_ENVIRONMENT=Production
 
 # Comando de inicio
 ENTRYPOINT ["dotnet", "BlackCanvasApp.dll"]
