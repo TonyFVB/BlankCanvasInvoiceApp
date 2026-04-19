@@ -1,4 +1,5 @@
 using BlackCanvasApp.Data;
+using BlackCanvasApp.Middleware;
 using BlackCanvasApp.Repositories;
 using BlackCanvasApp.Services.Interfaces;
 using BlackCanvasApp.Services.Services;
@@ -59,7 +60,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+//app.UseMiddleware<ExceptionMiddleware>();
+app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 app.UseHttpsRedirection();
 app.UseRouting();
 
