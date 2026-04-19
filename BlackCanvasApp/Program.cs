@@ -44,8 +44,8 @@ else
 builder.Services.AddDbContext<BcDContext>(options =>
     options.UseNpgsql(connString));
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+//var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+//builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 builder.Services.AddScoped<ICustomer, CustomerService>();
 builder.Services.AddScoped<Iinvoice, InvoiceService>();

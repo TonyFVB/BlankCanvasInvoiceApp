@@ -3,24 +3,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BlackCanvasApp.Models
 {
-    [Table("Customer")]
-    public class Customer
+
+    public class Customer : BaseEntity
     {
-        [Key,Column("id")]
-        public int Id { get; set; }
-        [Column("name")]
+
         public string Name { get; set; }
-        [Column("lastname")]
-        public string lastName { get; set; }
 
-        [Column("phone")]
-        public string Phone { get; set; }
+        public string LastName { get; set; }
 
-        [Column("address")]
-        public string Address { get; set; }
+        public string? Email { get; set; }
 
-        [Column("isdeleted")]
-        public bool IsDeleted { get; set; }
+        public string? Contact { get; set; }
 
         public ICollection<InvoiceHeader> Invoices { get; set; }
     }

@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = "Clientes";
 }
-@model List<CustomerDto>
+@model List<Customer>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="page-title">Clientes</h2>
@@ -15,8 +15,11 @@
 <div class="card shadow-soft p-3">
 
     <!-- Buscador -->
-    <div class="mb-3">
+    @* <div class="mb-3">
         <input type="text" class="form-control" placeholder="Buscar cliente..." />
+    </div> *@
+    <div class="mb-3">
+        <input type="text" id="customerSearch" class="form-control" placeholder="Buscar por nombre, apellido o teléfono..." />
     </div>
 
     <!-- Tabla -->
@@ -31,27 +34,102 @@
             </tr>
         </thead>
 
-        <tbody>
+        <tbody id="customerTableBody">
             @foreach(var item in Model)
             {
-            <tr>
+                <tr class="customer-row">
                 <td>@item.Name</td>
-                <td>@item.lastName</td>
-                <td>@item.Phone</td>
-                <td>@item.Address</td>
+                <td>@item.LastName</td>
+                <td>@item.Contact</td>
+                <td></td>
 
                 <td class="text-end">
-                    <a class="btn btn-sm btn-warning" asp-controller="Customer" asp-action="EditCustomer">
+                        <a class="btn btn-sm btn-warning" asp-controller="Customer" asp-route-id="@item.Id" asp-action="EditCustomer">
                         <i class="bi bi-pencil"></i>
                     </a>
 
-                    <a  class="btn btn-sm btn-danger" asp-controller="Customer" asp-action="DeleteCustomer">
-                        <i class="bi bi-trash"></i>
-                    </a>
+                        <a class="btn btn-sm btn-danger" asp-controller="Customer" asp-route-id="@item.Id" asp-action="DeleteCustomer">
+                            <i class="bi bi-trash"></i>
+                               </a> 
                 </td>
             </tr>
             }
         </tbody>
     </table>
 
+
 </div>
+<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header @(TempData["SuccessMessage"] != null ? "bg-success text-white" : "bg-danger text-white")">
+                <h5 class="modal-title">@(TempData["SuccessMessage"] != null ? "Éxito" : "Error")</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <p>@TempData["SuccessMessage"]</p>
+                }
+                else if (TempData["ErrorMessage"] != null)
+                {
+                    <p>@TempData["ErrorMessage"]</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var modalElement = document.getElementById('resultModal');
+                if (modalElement) {
+                    var myModal = new bootstrap.Modal(modalElement);
+                    myModal.show();
+                }
+            });
+        </script>
+    }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById('customerSearch');
+            const tableRows = document.querySelectorAll('#customerTableBody .customer-row');
+
+            searchInput.addEventListener('keyup', function (e) {
+                const term = e.target.value.toLowerCase();
+
+                tableRows.forEach(row => {
+                    // Obtenemos el texto de las celdas que nos interesan (Nombre, Apellido, Contacto)
+                    const name = row.cells[0].textContent.toLowerCase();
+                    const lastName = row.cells[1].textContent.toLowerCase();
+                    const contact = row.cells[2].textContent.toLowerCase();
+
+                    // Si el término de búsqueda coincide con cualquiera de los campos
+                    if (name.includes(term) || lastName.includes(term) || contact.includes(term)) {
+                        row.style.display = ""; // Mostrar fila
+                    } else {
+                        row.style.display = "none"; // Ocultar fila
+                    }
+                });
+            });
+        });
+    </script>
+@*     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Verificamos si hay algún mensaje en TempData
+            var hasSuccess = '@(TempData["SuccessMessage"] != null ? "true" : "false")';
+            var hasError = '@(TempData["ErrorMessage"] != null ? "true" : "false")';
+
+            if (hasSuccess === "true" || hasError === "true") {
+                var myModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                myModal.show();
+            }
+        });
+    </script> *@
+    }

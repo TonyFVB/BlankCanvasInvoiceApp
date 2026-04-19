@@ -15,60 +15,63 @@ namespace BlackCanvasApp.Services.Services
         {
             _customerRepository = customerRepository;
         }
-        public async Task<List<CustomerDto>> GetAllAsync()
+        public async Task<List<Customer>> GetAllAsync()
         {
-            var customers = _customerRepository.GetAllAsync();
-            var customerDto =  customers.Result.Select(c => new CustomerDto
+            var customers = await _customerRepository.GetAllAsync();
+            var customerDto =  customers.Select(c => new CustomerDto
             {
                 Name = c.Name,
-                lastName = c.lastName,
-                Phone = c.Phone
+                lastName = c.LastName,
+                Email = c.Email,
+                Contact = c.Contact
             }).ToList();
 
-            return customerDto;
+            return customers;
         }
-        public async Task<List<CustomerDto>> GetAllActiveAsync()
+        public async Task<List<Customer>> GetAllActiveAsync()
         {
-            var customer = _customerRepository.GetAllAsync().Result.Where(c => !c.IsDeleted);
+            var customer = await _customerRepository.GetAllActiveAsync();
             var customerDto = customer.Select(c => new CustomerDto
             {
                 Name = c.Name,
-                lastName = c.lastName,
-                Phone = c.Phone
+                lastName = c.LastName,
+                Email = c?.Email,
+                Contact = c?.Contact
             }).ToList();
 
-            return customerDto;
+            return customer;
         }
 
-        public async Task<CustomerDto> GetByIdAsync(int id)
+        public async Task<Customer> GetByIdAsync(int id)
         {
-            var customer = _customerRepository.GetByIdAsync(id).Result;
+
+            var customer = await _customerRepository.GetByIdAsync(id);
             var customerDto = new CustomerDto
             {
                 Name = customer.Name,
-                lastName = customer.lastName,
-                Phone = customer.Phone,
-                Address = customer.Address
+                lastName = customer.LastName,
+                Email = customer?.Email,
+                Contact = customer?.Contact,
             };
-            return customerDto;
+            return customer;
         }
 
-        public async Task AddAsync(Customer customer)
+        public async Task<bool> AddAsync(Customer customer)
         {
-            var result =  _customerRepository.AddAsync(customer);
-            await result;
+            var result =  await _customerRepository.AddAsync(customer);
+            return result;
         }
 
-        public async Task UpdateAsync(Customer customer)
+        public async Task<bool> UpdateAsync(Customer customer)
         {
-            var result = _customerRepository.UpdateAsync(customer);
-            await result;
+            var result = await _customerRepository.UpdateAsync(customer);
+            return result;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var result = _customerRepository.DeleteAsync(id);
-            await result;
+            var result = await _customerRepository.DeleteAsync(id);
+            return result;
         }
     }
 }

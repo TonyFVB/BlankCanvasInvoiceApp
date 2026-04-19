@@ -17,40 +17,43 @@ namespace BlackCanvasApp.Repositories
 
         public async Task<List<Customer>> GetAllAsync()
         {
-            var customer = await _context.Customers.AsNoTracking().Where(x => !x.IsDeleted).ToListAsync();
+            var customer =  await _context.Customer.AsNoTracking().ToListAsync();
             return customer;
         }
         public async Task<List<Customer>> GetAllActiveAsync()
         {
-            var customer = await _context.Customers.AsNoTracking().ToListAsync();
+            var customer = await _context.Customer.AsNoTracking().Where(e => !e.IsDeleted).ToListAsync();
             return customer;
         }
 
         public async Task<Customer> GetByIdAsync(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _context.Customer.FindAsync(id);
             return customer;
         }
 
-        public async Task AddAsync(Customer customer)
+        public async Task<bool> AddAsync(Customer customer)
         {
-            _context.Customers.Add(customer);
+            var result = await _context.Customer.AddAsync(customer);
             await _context.SaveChangesAsync();
+            return result != null;
         }
 
-        public async Task UpdateAsync(Customer customer)
+        public async Task<bool> UpdateAsync(Customer customer)
         {
-            _context.Customers.Update(customer);
+            var result = _context.Customer.Update(customer);
             await _context.SaveChangesAsync();
+            return result != null;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _context.Customer.FindAsync(id);
             customer.IsDeleted = true;
-            _context.Customers.Update(customer);
+            var result = _context.Customer.Update(customer);
             await _context.SaveChangesAsync();
-            
+            return result != null;
+
         }
     }
 }

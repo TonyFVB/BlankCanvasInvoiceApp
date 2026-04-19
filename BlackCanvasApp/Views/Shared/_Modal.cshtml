@@ -1,0 +1,31 @@
+﻿@page
+@model BlackCanvasApp.Views.Shared._ModalModel
+@{}
+@* @model dynamic
+    <div class="modal fade" id="@Model.Id" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-3">
+
+            <div class="modal-body">
+                <h5>@Model.Message</h5>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+
+                @if (Model.ShowCancel)
+                {
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                }
+
+                <button id="@Model.ButtonId" class="btn btn-primary">
+                    @Model.ButtonText
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div> *@
+

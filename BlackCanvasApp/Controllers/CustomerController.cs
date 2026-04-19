@@ -1,4 +1,5 @@
-﻿using BlackCanvasApp.Services.Interfaces;
+﻿using BlackCanvasApp.Models;
+using BlackCanvasApp.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,15 +13,27 @@ namespace BlackCanvasApp.Controllers
             _customerService = customerService;
         }
         // GET: CustomerController
-        public ActionResult Index()
+        public async Task<ActionResult> Search(string filter)
         {
-            return View();
+            var customers = await _customerService.GetAllActiveAsync(); // O un método específico de búsqueda en tu servicio
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                filter = filter.ToLower();
+                customers = customers.Where(c =>
+                    c.Name.ToLower().Contains(filter) ||
+                    c.LastName.ToLower().Contains(filter) ||
+                    (c.Contact != null && c.Contact.ToLower().Contains(filter)) ||
+                    (c.Email != null && c.Email.ToLower().Contains(filter))
+                ).ToList();
+            }
+            return PartialView("CustomerList", customers);
         }
 
         // GET: CustomerController/Details/5
         public async Task<IActionResult> CustomerList()
         {
-            var customers = await _customerService.GetAllAsync();
+            var customers = await _customerService.GetAllActiveAsync();
             return View(customers);
         }
 
@@ -30,59 +43,87 @@ namespace BlackCanvasApp.Controllers
             return View();
         }
         // GET: CustomerController/Edit/5
-        public ActionResult EditCustomer(int id)
+        public async Task<ActionResult> EditCustomer(int id)
         {
-            return View();
+            var customer = await _customerService.GetByIdAsync(id);
+            return View(customer);
         }
         // GET: CustomerController/Delete/5
-        public ActionResult DeleteCustomer(int id)
+        [HttpGet]
+        public async Task<ActionResult> DeleteCustomer(int Id)
         {
-            return View();
+            var customer = await _customerService.GetByIdAsync(Id);
+            return View(customer);
         }
 
         // POST: CustomerController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(Customer customer)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index));
+            try {
+                //if (!ModelState.IsValid) return View("CustomerList",customer);
+                var result = await _customerService.AddAsync(customer);
+
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Cliente agregado correctamente ✅";
+                    //return RedirectToAction("CustomerList");
+                }
+                    
             }
-            catch
-            {
-                return View();
+            catch(Exception ex)
+             {
+                TempData["ErrorMessage"] = $"Error de base de datos: {ex.Message}";
             }
+            
+
+            return RedirectToAction("CustomerList");
         }
 
         // POST: CustomerController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(Customer customer)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                //if (!ModelState.IsValid) return View("CustomerList",customer);
+                var result = await _customerService.UpdateAsync(customer);
+
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Cliente modificado correctamente ✅";
+                    //return RedirectToAction("CustomerList");
+                }
             }
-            catch
+            catch(Exception ex)
             {
-                return View();
+                TempData["ErrorMessage"] = $"Error de base de datos: {ex.Message}";
             }
+            return RedirectToAction("CustomerList");
         }
 
         // POST: CustomerController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int Id)
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                var result = await _customerService.DeleteAsync(Id);
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Cliente eliminado correctamente ✅";
+                    //return RedirectToAction("CustomerList");
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return View();
+                TempData["ErrorMessage"] = $"Error al intentar eliminar el cliente: {ex.Message}";
             }
+
+            return RedirectToAction("CustomerList");
         }
     }
 }
