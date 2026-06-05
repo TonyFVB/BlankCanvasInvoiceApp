@@ -1,0 +1,115 @@
+﻿.user-dropdown .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    padding: 6px 14px 6px 6px;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+}
+
+.user-dropdown .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.user-dropdown .dropdown-toggle::after {
+    margin-left: 4px;
+}
+
+/* Avatar círculo con inicial */
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #6a3093;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    flex-shrink: 0;
+}
+
+/* Dropdown menu */
+.user-dropdown .dropdown-menu {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    min-width: 200px;
+    margin-top: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.user-dropdown .dropdown-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 12px 8px;
+}
+
+.user-dropdown .user-info {
+    padding: 4px 12px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 6px;
+}
+
+    .user-dropdown .user-info .user-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        display: block;
+    }
+
+    .user-dropdown .user-info .user-role {
+        font-size: 11px;
+        color: #6a3093;
+        font-weight: 500;
+        display: block;
+        margin-top: 1px;
+    }
+
+    .user-dropdown .user-info .user-email {
+        font-size: 11px;
+        color: #999;
+        display: block;
+        margin-top: 1px;
+    }
+
+.user-dropdown .dropdown-item {
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+}
+
+    .user-dropdown .dropdown-item:hover {
+        background: #f5f0fa;
+        color: #6a3093;
+    }
+
+    .user-dropdown .dropdown-item.text-danger:hover {
+        background: #fce8e6;
+        color: #d93025;
+    }
+
+.user-dropdown .dropdown-divider {
+    margin: 6px 0;
+    border-color: #f0f0f0;
+}

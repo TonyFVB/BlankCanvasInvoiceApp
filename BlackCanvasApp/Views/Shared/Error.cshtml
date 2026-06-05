@@ -1,4 +1,4 @@
-﻿@model ErrorViewModel
+﻿@model BlackCanvasApp.ViewModels.ErrorViewModel
 @{
     ViewData["Title"] = "Error";
     var color = Model.StatusCode switch
@@ -10,7 +10,7 @@
     };
 
 }
-
+<link href="/css/site.css" rel="stylesheet" />
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
     <div class="card shadow-lg border-0 p-5 text-center">
 

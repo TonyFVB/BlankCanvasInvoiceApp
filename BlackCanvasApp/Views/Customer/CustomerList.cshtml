@@ -1,88 +1,432 @@
-﻿@using BlackCanvasApp.DTOs
+﻿@model List<BlankCanvasApp.Application.DTOs.CustomerListDto>
+@using BlankCanvasApp.Domain.Models
+@using BlankCanvasApp.Application.DTOs
+@using BlankCanvasApp.Domain.Emuns
 @{
+    Layout = "_LayoutApp";
     ViewData["Title"] = "Clientes";
+    var services = ViewBag.Services as List<Services> ?? new();
+    var representatives = ViewBag.Representatives as List<RepresentativeDto> ?? new();
+    var statuses = Constants.CustomerStatusMeta.Data;
+    var allCount = Model.Count;
+
 }
-@model List<Customer>
+<link href="~/css/CustomerList.css" rel="stylesheet" />
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="page-title">Clientes</h2>
-
-    <a class="btn btn-primary" asp-controller="Customer" asp-action="CreateCustomer">
-        <i class="bi bi-plus-circle"></i> Nuevo Cliente
-    </a>
+<div class="page-header">
+    <h1 class="page-title">Clientes</h1>
+    @if (User.HasClaim("permission", "clientes.crear"))
+    {
+        <button class="btn-new" onclick="openCreateModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nuevo cliente
+        </button>
+    }
 </div>
 
-<div class="card shadow-soft p-3">
-
-    <!-- Buscador -->
-    @* <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Buscar cliente..." />
-    </div> *@
-    <div class="mb-3">
-        <input type="text" id="customerSearch" class="form-control" placeholder="Buscar por nombre, apellido o teléfono..." />
+<!-- Search bar -->
+<div class="filter-bar">
+    <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Buscar cliente..." oninput="filterTable()" />
     </div>
+</div>
 
-    <!-- Tabla -->
-    <table class="table table-hover align-middle">
-        <thead class="table-light">
+<!-- Status tabs -->
+<div class="status-tabs">
+    <button class="status-tab active" data-status="" onclick="setStatusTab(this)">
+        Todos <span class="tab-count">@allCount</span>
+    </button>
+    @foreach (var s in statuses)
+    {
+        var count = Model.Count(c => c.Status == s.Key);
+        <button class="status-tab" data-status="@((int)s.Key)" onclick="setStatusTab(this)">
+            <span class="dot" style="width:7px;height:7px;border-radius:50%;background:@s.Value.Color;display:inline-block;"></span>
+            @s.Value.Label
+            <span class="tab-count">@count</span>
+        </button>
+    }
+</div>
+
+<!-- Table -->
+<div class="customer-table-wrap">
+    <table class="customer-table" id="customerTable">
+        <thead>
             <tr>
+                <th style="width:40px;"></th>
+                <th>#</th>
                 <th>Nombre</th>
-                <th>Apellido</th>
+                <th>Status</th>
                 <th>Teléfono</th>
-                <th>Dirección</th>
-                <th class="text-end">Acciones</th>
+                <th>Servicios</th>
+                <th>Timeline</th>
+                <th>Presupuesto</th>
+                <th style="width:48px;"></th>
             </tr>
         </thead>
-
         <tbody id="customerTableBody">
-            @foreach(var item in Model)
+            @if (!Model.Any())
             {
-                <tr class="customer-row">
-                <td>@item.Name</td>
-                <td>@item.LastName</td>
-                <td>@item.Contact</td>
-                <td></td>
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+                            </svg>
+                            <p>No hay clientes registrados aún.</p>
+                        </div>
+                    </td>
+                </tr>
+            }
+            @{
+                int rowNum = 1;
+            }
+            @foreach (var c in Model)
+            {
+                <tr data-id="@c.Id"
+                    data-name="@c.Name.ToLower()"
+                    data-status="@((int)c.Status)"
+                    data-customer-name="@c.Name">
 
-                <td class="text-end">
-                        <a class="btn btn-sm btn-warning" asp-controller="Customer" asp-route-id="@item.Id" asp-action="EditCustomer">
-                        <i class="bi bi-pencil"></i>
-                    </a>
+                    <td>
+                        <input type="checkbox" style="accent-color: var(--brand);" />
+                    </td>
+                    <td style="color:var(--text-light); font-size:12px;">@rowNum</td>
 
-                        <a class="btn btn-sm btn-danger" asp-controller="Customer" asp-route-id="@item.Id" asp-action="DeleteCustomer">
-                            <i class="bi bi-trash"></i>
-                               </a> 
-                </td>
-            </tr>
+                    <td>
+                        <span class="customer-name" onclick="openDetailModal(@c.Id)">@c.Name</span>
+                    </td>
+
+                    <td>
+                        <div style="position:relative; display:inline-block;">
+                            <button class="status-badge @c."
+                                    onclick="toggleStatusDropdown(event, @c.Id, '@((int)c.Status)')">
+                                <span class="dot"></span>
+                                @c.StatusLabel
+                            </button>
+                            <div class="status-dropdown" id="status-dd-@c.Id">
+                                <div class="status-dropdown-title">Cambiar status</div>
+                                @foreach (var s in statuses)
+                                {
+                                    <button class="status-option @(c.Status == s.Key ? "selected" : "")"
+                                            onclick="changeStatus(@c.Id, @((int)s.Key))">
+                                        <span style="display:flex;align-items:center;gap:8px;">
+                                            <span class="dot" style="width:9px;height:9px;border-radius:50%;background:@s.Value.Color;flex-shrink:0;"></span>
+                                            @s.Value.Label
+                                        </span>
+                                        @if (c.Status == s.Key)
+                                        {
+                                            <span>✓</span>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </td>
+
+                    <td style="color:var(--text-mid);">@(c.Contact ?? "—")</td>
+
+                    <td>
+                        @if (c.Services.Any())
+                        {
+                            <div class="service-cell" onclick="event.stopPropagation()">
+                                <button type="button" class="service-count-btn" onclick="toggleServicesPopover(event, @c.Id)">
+                                    @c.Services.Count
+                                </button>
+                                <div class="services-popover services-preview-popover" id="services-popover-@c.Id">
+                                    <div class="services-popover-title">Servicios</div>
+                                    @foreach (var svc in c.Services)
+                                    {
+                                        <div class="services-popover-item">@svc</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="service-cell" onclick="event.stopPropagation()">
+                                <button type="button" class="service-add-btn" onclick="toggleServicesPopover(event, @c.Id)" aria-label="Asignar servicio">
+                                    <span></span>
+                                </button>
+                                <div class="services-popover services-assign-popover" id="services-popover-@c.Id">
+                                    <div class="services-popover-title">Asignar servicio</div>
+                                    <form onsubmit="submitCustomerServices(event, @c.Id)">
+                                        <div class="service-picker-list">
+                                            @foreach (var svc in services)
+                                            {
+                                                var isSelected = c.ServiceIds.Contains(svc.Id);
+                                                <button type="button"
+                                                        class="service-picker-chip @(isSelected ? "selected" : "")"
+                                                        data-value="@svc.Id"
+                                                        onclick="toggleCustomerServiceChip(this)">
+                                                    @svc.Name
+                                                </button>
+                                            }
+                                        </div>
+                                        <div id="rowSelectedServiceIds-@c.Id">
+                                            @foreach (var serviceId in c.ServiceIds)
+                                            {
+                                                <input type="hidden" name="SelectedServiceIds" value="@serviceId" />
+                                            }
+                                        </div>
+                                        <input type="hidden" name="CustomerId" value="@c.Id" />
+                                        <div class="services-popover-footer">
+                                            <button type="button" class="service-popover-cancel" onclick="closeServicesPopover(@c.Id)">Cancelar</button>
+                                            <button type="submit" class="service-popover-apply">Aplicar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                    </td>
+
+                    <td>
+                        @if (c.ProjectStartDate.HasValue || c.ProjectEndDate.HasValue)
+                        {
+                            <div class="timeline-cell">
+                                <span class="timeline-date">@(c.ProjectStartDate?.ToString("dd MMM yyyy") ?? "—")</span>
+                                <span>›</span>
+                                <span class="timeline-date">@(c.ProjectEndDate?.ToString("dd MMM yyyy") ?? "—")</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="color:var(--text-light);font-size:12px;">—</span>
+                        }
+                    </td>
+
+                    <td style="font-weight:600;">
+                        @(c.Budget.HasValue ? $"US$ {c.Budget:N2}k" : "—")
+                    </td>
+
+                    <td style="position:relative;">
+                        <button class="actions-btn" onclick="toggleActionsMenu(event, @c.Id)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="currentColor">
+                                <circle cx="12" cy="5" r="1.5" />
+                                <circle cx="12" cy="12" r="1.5" />
+                                <circle cx="12" cy="19" r="1.5" />
+                            </svg>
+                        </button>
+                        <div class="actions-dropdown" id="actions-dd-@c.Id">
+                            @if (User.HasClaim("permission", "clientes.editar"))
+                            {
+                                <button class="action-item" onclick="openEditModal(@c.Id);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                    Editar
+                                </button>
+                            }
+                            <button class="action-item" onclick="sendEmail('@c.Email'); closeAllDropdowns()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                </svg>
+                                Enviar correo
+                            </button>
+                            <button class="action-item" onclick="openDetailModal(@c.Id); closeAllDropdowns()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="16" x2="12" y2="12" />
+                                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                                </svg>
+                                Detalles
+                            </button>
+                            <div class="action-divider"></div>
+                            @if (User.HasClaim("permission", "clientes.eliminar"))
+                            {
+                                <button class="action-item warning" onclick="archiveCustomer(@c.Id, '@c.Name'); closeAllDropdowns()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="21 8 21 21 3 21 3 8" />
+                                        <rect x="1" y="3" width="22" height="5" />
+                                        <line x1="10" y1="12" x2="14" y2="12" />
+                                    </svg>
+                                    Archivar
+                                </button>
+                                <button class="action-item danger" onclick="confirmDelete(@c.Id, '@c.Name'); closeAllDropdowns()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6l-1 14H6L5 6" />
+                                        <path d="M10 11v6M14 11v6" />
+                                        <path d="M9 6V4h6v2" />
+                                    </svg>
+                                    Borrar
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+                rowNum++;
             }
         </tbody>
     </table>
-
-
 </div>
-<div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header @(TempData["SuccessMessage"] != null ? "bg-success text-white" : "bg-danger text-white")">
-                <h5 class="modal-title">@(TempData["SuccessMessage"] != null ? "Éxito" : "Error")</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREAR / EDITAR CLIENTE                              -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="customerModal" onclick="handleModalClick(event)">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Añadir nuevo cliente</h2>
+        </div>
+        <form id="customerForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="customerId" name="Id" value="0" />
+
             <div class="modal-body">
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <p>@TempData["SuccessMessage"]</p>
-                }
-                else if (TempData["ErrorMessage"] != null)
-                {
-                    <p>@TempData["ErrorMessage"]</p>
-                }
+
+                <!-- Nombre -->
+                <div>
+                    <label class="form-label">Nombre <span class="required">*</span></label>
+                    <input class="form-control-custom" type="text" id="customerName" name="Name"
+                           placeholder="Nombre del cliente o empresa" required />
+                </div>
+
+                <!-- Encargado -->
+                <div>
+                    <label class="form-label">Encargado</label>
+                    <div class="chip-group" id="representativeChips">
+                        @foreach (var rep in representatives)
+                        {
+                            <button type="button" class="chip" data-value="@rep.Id"
+                                    onclick="selectRepresentative(this)">
+                                @rep.FullName
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" id="assignedTo" name="RepresentativeId" />
+                </div>
+
+                <!-- Servicios -->
+                <div>
+                    <label class="form-label">Servicios</label>
+                    <div class="chip-group" id="serviceChips">
+                        @foreach (var svc in services)
+                        {
+                            <button type="button" class="chip" data-value="@svc.Id"
+                                    onclick="toggleServiceChip(this)">
+                                @svc.Name
+                            </button>
+                        }
+                    </div>
+                    <div id="selectedServiceIds"></div>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="form-label">Estado</label>
+                    <select class="form-control-custom" id="customerStatus" name="Status">
+                        @foreach (var s in statuses)
+                        {
+                            <option value="@((int)s.Key)">@s.Value.Label</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Timeline -->
+                <div>
+                    <label class="form-label">Timeline</label>
+                    <div class="timeline-inputs">
+                        <input class="form-control-custom" type="date" id="startDate" name="ProjectStartDate" />
+                        <span class="timeline-arrow">›</span>
+                        <input class="form-control-custom" type="date" id="endDate" name="ProjectEndDate" />
+                    </div>
+                </div>
+
+                <!-- Presupuesto -->
+                <div>
+                    <label class="form-label">Presupuesto</label>
+                    <div class="budget-wrap">
+                        <span class="currency">US$</span>
+                        <input class="form-control-custom" type="number" id="customerBudget"
+                               name="Budget" placeholder="00.00" step="0.01" min="0" />
+                    </div>
+                </div>
+
+                <!-- Teléfono -->
+                <div>
+                    <label class="form-label">Teléfono</label>
+                    <input class="form-control-custom" type="tel" id="customerContact"
+                           name="Contact" placeholder="809-000-0000" />
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="form-label">Email</label>
+                    <input class="form-control-custom" type="email" id="customerEmail"
+                           name="Email" placeholder="correo@ejemplo.com" />
+                </div>
+
+                <!-- Notas -->
+                <div>
+                    <label class="form-label">Notas</label>
+                    <textarea class="form-control-custom" id="customerNotes" name="Notes"
+                              placeholder="Notas internas..."
+                              style="height:80px; resize:vertical; padding:10px 12px;"></textarea>
+                </div>
+
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                <button type="button" class="btn-cancel" onclick="closeModal('customerModal')">Cancelar</button>
+                <button type="submit" class="btn-submit" id="modalSubmitBtn">Añadir cliente</button>
             </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODAL: CONFIRMAR BORRAR                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay confirm-modal" id="deleteModal" onclick="handleModalClick(event)">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Borrar cliente</h2>
+        </div>
+        <div class="modal-body">
+            <p>
+                ¿Estás seguro de borrar <strong id="deleteCustomerName"></strong>?
+                Si borras, perderás los datos permanentemente.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeModal('deleteModal')">Cancelar</button>
+            <button type="button" class="btn-danger" onclick="executeDelete()">Borrar</button>
         </div>
     </div>
 </div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Anti-forgery token para fetch -->
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+<input type="hidden" id="afToken" value="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/CustomerList.js"></script>
+
+}
+
+@* @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
     {
@@ -95,8 +439,8 @@
                 }
             });
         </script>
-    }
-    <script>
+    } *@
+@*     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const searchInput = document.getElementById('customerSearch');
             const tableRows = document.querySelectorAll('#customerTableBody .customer-row');
@@ -119,7 +463,7 @@
                 });
             });
         });
-    </script>
+    </script> *@
 @*     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Verificamos si hay algún mensaje en TempData
@@ -131,5 +475,5 @@
                 myModal.show();
             }
         });
-    </script> *@
-    }
+    </script> 
+    }*@

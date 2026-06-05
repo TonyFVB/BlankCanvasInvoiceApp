@@ -1,4 +1,5 @@
-﻿@{
+﻿@using BlankCanvasApp.Domain.Models
+@{
     ViewData["Title"] = "Nuevo Cliente";
 }
 @model Customer
@@ -16,11 +17,11 @@
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3">@* 
             <label asp-for="LastName" class="form-label">Last Name</label>
             <input asp-for="LastName" class="form-control" />
         </div>
-
+ *@
         <div class="mb-3">
             <label asp-for="Email" class="form-label"></label>
             <input asp-for="Email" class="form-control" />

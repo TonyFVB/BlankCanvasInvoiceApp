@@ -1,7 +1,8 @@
-﻿@{
+﻿@using BlankCanvasApp.Application.DTOs
+@{
     ViewData["Title"] = "Editar Cliente";
 }
-@model Customer
+@model CustomerFormDto
 
 <h2 class="page-title">Editar Cliente</h2>
 
@@ -15,10 +16,10 @@
             <span asp-validation-for="Name" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
+        <div class="mb-3">@* 
             <label asp-for="LastName" class="form-label">Last Name</label>
             <input asp-for="LastName" class="form-control" />
-        </div>
+        </div> *@
 
         <div class="mb-3">
             <label asp-for="Email" class="form-label"></label>

@@ -1,4 +1,5 @@
-using BlackCanvasApp.Models;
+using BlackCanvasApp.ViewModels;
+using BlankCanvasApp.Domain.Models;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;

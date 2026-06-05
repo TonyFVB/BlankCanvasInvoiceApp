@@ -1,58 +1,69 @@
-using BlackCanvasApp.Data;
+using BlackCanvasApp.Authorization;
 using BlackCanvasApp.Middleware;
-using BlackCanvasApp.Repositories;
-using BlackCanvasApp.Services.Interfaces;
-using BlackCanvasApp.Services.Services;
+using BlankCanvasApp.Domain.Models;
+using BlankCanvasApp.Infrastructure;
+using BlankCanvasApp.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Configuration.AddEnvironmentVariables();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+//var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+//builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+// ── Autorización basada en permisos ──────────────────────────
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
 builder.Services.AddControllersWithViews();
 
 
-builder.Configuration.AddEnvironmentVariables();
-//var connString = builder.Configuration.GetConnectionString("DefaultConnection")
-//                 ?? Environment.GetEnvironmentVariable("DATABASE_URL");
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-string connString;
-
-if (!string.IsNullOrEmpty(databaseUrl))
+builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 8;
 
-    var builderConn = new NpgsqlConnectionStringBuilder
-    {
-        Host = uri.Host,
-        Port = uri.Port,
-        Username = userInfo[0],
-        Password = userInfo[1],
-        Database = uri.AbsolutePath.Trim('/'),
-        SslMode = SslMode.Require,
-        TrustServerCertificate = true
-    };
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
 
-    connString = builderConn.ToString();
-}
-else
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<BcDContext>()
+.AddDefaultTokenProviders();
+
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+//    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+//    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+//})
+//.AddIdentityCookies();
+
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    connString = builder.Configuration.GetConnectionString("DefaultConnection");
-}
-builder.Services.AddDbContext<BcDContext>(options =>
-    options.UseNpgsql(connString));
+    options.LoginPath = "/Auth/Login";
+    options.LogoutPath = "/Auth/Logout";
+    options.AccessDeniedPath = "/Auth/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
-
-builder.Services.AddScoped<ICustomer, CustomerService>();
-builder.Services.AddScoped<Iinvoice, InvoiceService>();
-
-builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 var app = builder.Build();
+await DbSeeder.SeedAsync(app.Services);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -60,18 +71,19 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-//app.UseMiddleware<ExceptionMiddleware>();
+
+//app.UseMiddleware<ExceptionMiddleware>();\
+app.UseStaticFiles();
 app.UseStatusCodePagesWithReExecute("/Home/Error", "?statusCode={0}");
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication();    
 app.UseAuthorization();
-
-app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    //pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
     //.WithStaticAssets();
 
 

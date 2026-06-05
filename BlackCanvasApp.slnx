@@ -1,3 +1,6 @@
 <Solution>
   <Project Path="BlackCanvasApp/BlackCanvasApp.csproj" />
+  <Project Path="BlankCanvasApp.Application/BlankCanvasApp.Application.csproj" Id="c83b40be-ec8a-4a12-97e0-ca58db75fc00" />
+  <Project Path="BlankCanvasApp.Domain/BlankCanvasApp.Domain.csproj" Id="3ab0258b-0df5-451a-8a9c-4e8390234a03" />
+  <Project Path="BlankCanvasApp.Infrastructure/BlankCanvasApp.Infrastructure.csproj" Id="2e8365b9-2ebd-4da0-a929-37e69e3f9ef9" />
 </Solution>

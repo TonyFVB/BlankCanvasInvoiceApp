@@ -1,53 +1,111 @@
-﻿@{
+﻿
+@{
     ViewData["Title"] = "Inicio";
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Registro — BlackCanvas</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="~/css/HomePage.css" asp-append-version="true" />
+    </head>
+    // Detectar permisos para mostrar/ocultar cartas
+    bool puedeVerClientes  = User.HasClaim("permission", "clientes.ver");
+    bool puedeVerFacturas  = User.HasClaim("permission", "facturas.ver");
+    bool puedeVerReportes  = User.IsInRole("Admin") || User.IsInRole("Supervisor");
+    bool puedeVerPerfil    = User.HasClaim("permission", "perfil.editar");
+
+    var userName = User.Identity?.Name ?? "Usuario";
 }
+<div class="home-wrapper">
 
-<div class="text-center mt-5">
-
-    <h1 class="fw-bold">Bienvenido a BlankCanvasApp 🟣</h1>
-    <p class="text-muted">Sistema de gestión de clientes y facturación</p>
-
-</div>
-
-<div class="row mt-5">
-
-    <!-- Clientes -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-soft p-4 text-center">
-
-            <i class="bi bi-people display-4 mb-3 text-primary"></i>
-
-            <h4>Clientes</h4>
-            <p class="text-muted">Gestiona tus clientes fácilmente</p>
-
-            <a class="btn btn-primary" asp-controller="Customer" asp-action="CustomerList">
-                <i class="bi bi-people"></i> Clientes
-            </a>
-        </div>
+    <!-- Header -->
+    <div class="home-header">
+        @* <div class="greeting-badge">
+            👋 Bienvenido, @userName
+        </div> *@
+        <h1>Gestión de Clientes y Facturación</h1>
+        <p>Selecciona una sección para comenzar</p>
     </div>
 
-    <!-- Facturación -->
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-soft p-4 text-center">
+    <!-- Grid de cartas -->
+    <div class="home-grid">
 
-            <i class="bi bi-receipt display-4 mb-3 text-primary"></i>
-
-            <h4>Facturación</h4>
-            <p class="text-muted">Crea y gestiona tus facturas</p>
-
-            <a href="/Invoice" class="btn btn-primary">
-                Ir a Facturación
+        <!-- ── Clientes ──────────────────────────────────── -->
+        @if (puedeVerClientes)
+        {
+            <a class="home-card"
+               asp-controller="Customer" asp-action="CustomerList">
+                <div class="card-icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        <path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
+                    </svg>
+                </div>
+                <span class="card-title">Clientes</span>
+                 
             </a>
-        </div>
+        }
+
+        <!-- ── Facturación ───────────────────────────────── -->
+        @if (puedeVerFacturas)
+        {
+            <a class="home-card"
+               asp-controller="Invoice" asp-action="Index">
+                <div class="card-icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <line x1="10" y1="9" x2="8" y2="9"/>
+                        <circle cx="8" cy="15" r="1" fill="currentColor" stroke="none"/>
+                    </svg>
+                </div>
+                <span class="card-title">Facturación</span>
+                @* <span class="card-desc">Consulta y administra las facturas del sistema</span> *@
+            </a>
+        }
+
+        <!-- ── Reportes (solo Admin y Supervisor) ───────── -->
+        @if (puedeVerReportes)
+        {
+            <a class="home-card" href="#">
+                <span class="card-badge">Próximamente</span>
+                <div class="card-icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6"  y1="20" x2="6"  y2="14"/>
+                        <path d="M2 20h20"/>
+                    </svg>
+                </div>
+                <span class="card-title">Reportes</span>
+                @* <span class="card-desc">Generación y exportación de reportes</span> *@
+            </a>
+        }
+
+        <!-- ── Perfil (usuarios con permiso perfil.editar) ─ -->
+        @if (puedeVerPerfil)
+        {
+            <a class="home-card" asp-controller="Profile" asp-action="Edit">
+                <div class="card-icon-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M20 21a8 8 0 1 0-16 0"/>
+                        <path d="M16 19l2 2 4-4" stroke-width="1.8"/>
+                    </svg>
+                </div>
+                <span class="card-title">Mi Perfil</span>
+                @* <span class="card-desc">Actualiza tu información personal y preferencias</span> *@
+            </a>
+        }
+
     </div>
-
 </div>
-@* @{
-    ViewData["Title"] = "Home Page";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
- *@
